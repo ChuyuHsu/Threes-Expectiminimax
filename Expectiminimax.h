@@ -14,6 +14,9 @@ public:
     bool init();
     dir_e getAction(Grid&, char); 
 private:
+    double evaluate(Grid& g);
+    double minimizer(int depth, bool player, Grid& g, double alpha, double beta, char hint);
+    double maximizer(int depth, bool player, Grid& g, double alpha, double beta, char hint);
     /* data */
 };
 
