@@ -85,8 +85,11 @@ void PlayNRounds(int n){
 
             ai->reset();
             myGame.getCurrentGrid(myGrid);
-            dir = ai->getAction(myGrid, myGame.getHint());
 
+            dir = ai->getAction(myGrid, myGame.getHint());
+            //dir = getRandDir();
+            //std::cout << dir << std::endl;
+            
             myGame.insertDirection(dir);
             gotoXY(50,0);
             std::cout<<myGame.getHint();

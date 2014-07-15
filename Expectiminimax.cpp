@@ -20,33 +20,43 @@ bool Expectiminimax::init() {
     return true;
 }
 
+int DEPTH = 2;
+
 dir_e Expectiminimax::getAction(Grid& grid, char hint) {
     Grid backup;
     backup.copy(grid);
+    
+    //std::cout << std::endl;
 
     dir_e bestAction = (dir_e)0;
     double bestActionValue = -DBL_MAX;
     
-    double value = 0.0;
+    double value = -DBL_MAX;
 
     for (int i = 0; i < 4; i++) {
         grid.copy(backup);
         if(!grid.shift( (dir_e)i )) continue;
 
-        value = minimizer(5, 1, grid, -DBL_MAX, DBL_MAX, hint);
+        value = minimizer(DEPTH, 1, grid, -DBL_MAX, DBL_MAX, hint);
+        //std::cout << "Dir(" << (dir_e)i << "), value: " << value << std::endl;
 
-        if(bestActionValue > value)
+        if(bestActionValue < value){
             bestAction = (dir_e) i;
+            bestActionValue = value; 
+        }
+
 
     }
-    
+
+    grid.copy(backup);
+    //std::cout << "Dir: " << bestAction << std::endl;    
     return bestAction;
 
 }
 
 double Expectiminimax::minimizer(int depth, bool player, Grid& grid, double alpha, double beta, char hint ) {
     double value = DBL_MAX;
-
+    //std::cout << "minimizer" << std::endl;
     if(isTerminated(depth, grid)) 
         return evaluate(grid);
 
@@ -111,7 +121,7 @@ double Expectiminimax::minimizer(int depth, bool player, Grid& grid, double alph
         {
             for (int i = 0; i < slotNumber; i++) {
                 grid.setSlot(i, hint-'0');
-                score += maximizer(depth + 1, !player, grid, alpha, beta);
+                score += maximizer(depth - 1, !player, grid, alpha, beta);
                 grid.copy(backup); 
             }
 
@@ -127,8 +137,9 @@ double Expectiminimax::minimizer(int depth, bool player, Grid& grid, double alph
 
 double Expectiminimax::maximizer(int depth, bool player, Grid& grid, double alpha, double beta, char hint) {
     double value = -DBL_MAX;
-
-    if(isTerminated(depth, grid)) evaluate(grid);
+    //std::cout << "maximizer" << std::endl;
+    if(isTerminated(depth, grid)) 
+        return evaluate(grid);
 
     Grid backup;
     backup.copy(grid);
@@ -143,8 +154,9 @@ double Expectiminimax::maximizer(int depth, bool player, Grid& grid, double alph
 
         value = minimizer(depth - 1, !player, grid, alpha, beta);
 
-        if(bestActionValue > value)
+        if(bestActionValue < value)
             bestAction = (dir_e) i;
+            bestActionValue = value;
 
     }
 
@@ -167,7 +179,7 @@ double Expectiminimax::evaluate(Grid& grid) {
 
 
 bool Expectiminimax::isTerminated(int depth, Grid& grid) {
-    
+    ////std::cout << depth << std::endl;
 	if(depth == 0)
 		return true;
 
