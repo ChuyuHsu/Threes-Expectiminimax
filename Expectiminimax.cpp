@@ -33,7 +33,7 @@ dir_e Expectiminimax::getAction(Grid& grid, char hint) {
         grid.copy(backup);
         if(!grid.shift( (dir_e)i )) continue;
 
-        value = minimizer(1, 1, grid, -DBL_MAX, DBL_MAX, hint);
+        value = minimizer(5, 1, grid, -DBL_MAX, DBL_MAX, hint);
 
         if(bestActionValue > value)
             bestAction = (dir_e) i;
@@ -44,13 +44,13 @@ dir_e Expectiminimax::getAction(Grid& grid, char hint) {
 
 }
 
-double Expectiminimax::minimizer(int depth, bool player, Grid& grid, double alpha, double beta, char hint = 0) {
+double Expectiminimax::minimizer(int depth, bool player, Grid& grid, double alpha, double beta, char hint ) {
     double value = DBL_MAX;
 
-    if(isTerminate(depth, g)) 
-        return evaluate(g);
+    if(isTerminated(depth, grid)) 
+        return evaluate(grid);
 
-    slotNumber = grid.getSlotNo();
+    int slotNumber = grid.getSlotNo();
     Grid backup;
     backup.copy(grid);
 
@@ -67,9 +67,9 @@ double Expectiminimax::minimizer(int depth, bool player, Grid& grid, double alph
                 for(int j = 1; j <= num; j++){
                     grid.setSlot(i, j*6);
                     
-                    //~ score += (1.0 / num) * evaluate(myGrid);
+                    //~ score += (1.0 / num) * evaluate(grid);
 
-                    score += (1.0 / num) * maximizer(depth + 1, !player, grid, alpha, beta);
+                    score += (1.0 / num) * maximizer(depth - 1, !player, grid, alpha, beta);
                     grid.copy(backup);
                 }
             }
@@ -81,9 +81,9 @@ double Expectiminimax::minimizer(int depth, bool player, Grid& grid, double alph
                 for(int j = 1; j <= 3; j++){
                     grid.setSlot(i, j);
                     
-                    //~ score += (1.0 / num) * evaluate(myGrid);
+                    //~ score += (1.0 / num) * evaluate(grid);
 
-                    score += (1.0 / num) * maximizer(depth + 1, !player, grid, alpha, beta);
+                    score += (1.0 / 3.0) * maximizer(depth - 1, !player, grid, alpha, beta);
                     grid.copy(backup);
                 }
             }
@@ -99,9 +99,9 @@ double Expectiminimax::minimizer(int depth, bool player, Grid& grid, double alph
                 for(int j = 1; j <= num; j++){
                     grid.setSlot(i, j*6);
                     
-                    //~ score += (1.0 / num) * evaluate(myGrid);
+                    //~ score += (1.0 / num) * evaluate(grid);
 
-                    score += (1.0 / num) * maximizer(depth + 1, !player, grid, alpha, beta);
+                    score += (1.0 / num) * maximizer(depth - 1, !player, grid, alpha, beta);
                     grid.copy(backup);
                 }
             }
@@ -125,7 +125,7 @@ double Expectiminimax::minimizer(int depth, bool player, Grid& grid, double alph
     return value;
 }
 
-double Expectiminimax::maximizer(int depth, bool player, Grid& grid, double alpha, double beta, char hint=0) {
+double Expectiminimax::maximizer(int depth, bool player, Grid& grid, double alpha, double beta, char hint) {
     double value = -DBL_MAX;
 
     if(isTerminated(depth, grid)) evaluate(grid);
@@ -136,13 +136,12 @@ double Expectiminimax::maximizer(int depth, bool player, Grid& grid, double alph
     dir_e bestAction = (dir_e)0;
     double bestActionValue = -DBL_MAX;
     
-    double value = 0.0;
 
     for (int i = 0; i < 4; i++) {
         grid.copy(backup);
         if(!grid.shift( (dir_e)i )) continue;
 
-        value = minimizer(1, !player, grid, alpha, beta);
+        value = minimizer(depth - 1, !player, grid, alpha, beta);
 
         if(bestActionValue > value)
             bestAction = (dir_e) i;
@@ -154,9 +153,35 @@ double Expectiminimax::maximizer(int depth, bool player, Grid& grid, double alph
 
 
 double Expectiminimax::evaluate(Grid& grid) {
+    double maxWeight = 1.0;
+    double emptyWeight = 1.0;
+    
+    double value =
+        //smoothness()*smmothweight + 
+        //monotonicity()*monoWeight + 
+        grid.getMaxTile() * maxWeight + 
+        grid.getEmptyBlkNo() * emptyWeight; 
 
-
-    return 0.0;
+    return value;
 }
 
+
+bool Expectiminimax::isTerminated(int depth, Grid& grid) {
+    
+	if(depth == 0)
+		return true;
+
+	Grid backup;
+	backup.copy(grid);
+	bool left = grid.shift(LEFT); grid.copy(backup);
+	bool up = grid.shift(UP); grid.copy(backup);
+	bool down = grid.shift(DOWN); grid.copy(backup);
+	bool right  = grid.shift(RIGHT); 
+	grid.copy(backup);
+	if(left || down || right || up){
+		return false;
+	}
+
+	return true;
+}
 

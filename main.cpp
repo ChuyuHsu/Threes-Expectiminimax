@@ -72,7 +72,7 @@ void PlayNRounds(int n){
 
     if(myGame.isGameOver(score))  myGame.reset();
   
-    GameAgent* ai = new MonteCarloTreeSearch();  
+    GameAgent* ai = new Expectiminimax();  
     Grid myGrid;
 
     for(int i = 0;i < n;i++){    
